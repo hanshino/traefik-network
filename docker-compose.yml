@@ -1,0 +1,38 @@
+version: "3.3"
+
+services:
+  traefik:
+    image: "traefik:v2.4"
+    container_name: "traefik"
+    command:
+      - "--log.level=INFO"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls.certResolver=leresolver"
+      - "--certificatesresolvers.leresolver.acme.email=${ADMIN_MAIL}"
+      - "--certificatesresolvers.leresolver.acme.storage=/data/acme.json"
+      - "--certificatesresolvers.leresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.leresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.leresolver.acme.httpchallenge.entrypoint=web"
+    labels:
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik-https.tls.certresolver=leresolver
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    networks:
+      - "traefik"
+    volumes:
+      - "./data:/data"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+networks:
+  traefik:
+    external: true
+    name: traefik
