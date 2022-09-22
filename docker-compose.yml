@@ -2,11 +2,13 @@ version: "3.3"
 
 services:
   traefik:
-    image: "traefik:v2.4"
+    image: "traefik:v2.8"
     container_name: "traefik"
+    restart: always
     command:
       - "--log.level=INFO"
-      - "--api.insecure=true"
+      # - "--accesslog=true"
+      # - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
@@ -31,6 +33,11 @@ services:
     volumes:
       - "./data:/data"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1k"
+        max-file: "3"
 
 networks:
   traefik:
